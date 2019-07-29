@@ -1,0 +1,46 @@
+import java.util.*;
+
+public class JosephusSequence {
+    private static Scanner in = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        int n,k; n = in.nextInt(); k = in.nextInt();
+        testCase(n,k);
+    }
+
+    private static void testCase(int n, int k) {
+        Deque<Integer> people = new LinkedList<>();
+        ArrayList<Integer> order = new ArrayList<>();
+        for (int i=1;i<=n;i++) people.addLast(i);
+
+        // 처음 죽이는 게 k 번째 사람이다.
+        // k-1번 뒤로 이동
+        for (int i=0;i<k-1;i++) {
+            people.addLast(people.removeFirst()); // 첫 사람을 맨 뒤로 이동 시킨다.
+        }
+
+        while (people.size() != 0) {
+            order.add(people.removeFirst()); // 맨 앞을 사망 시키고
+
+            if (people.size() == 1) {
+                order.add(people.removeFirst());
+                break;
+            }
+            // k-1번 뒤로 이동
+            for (int i=0;i<k-1;i++) {
+                people.addLast(people.removeFirst()); // 첫 사람을 맨 뒤로 이동 시킨다.
+            }
+        }
+
+        System.out.print("<");
+        for (int i = 0; i<order.size(); i++) {
+            if (i == order.size()-1) {
+                System.out.print(order.get(i));
+            }
+            else {
+                System.out.print(order.get(i) + ", ");
+            }
+        }
+        System.out.println(">");
+    }
+}
