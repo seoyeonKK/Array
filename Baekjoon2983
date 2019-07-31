@@ -1,0 +1,170 @@
+package array;
+
+import java.util.*;
+
+public class Baekjoon2983 {
+    private static Scanner in = new Scanner(System.in);
+
+    // p : x-y 의 값에 따라서 구분! 1 기울기
+    private static HashMap<Integer, ArrayList<Point>> p = new HashMap<>(); // 기울기 1, A,D
+    // m : x+y 의 값에 따라서 구분! -1 기울기
+    private static HashMap<Integer, ArrayList<Point>> m = new HashMap<>(); // 기울기 -1 B,C
+
+    private static Comparator<Point> comparator = new Comparator<Point>() {
+        @Override
+        public int compare(Point o1, Point o2) {
+            return Integer.compare(o1.x, o2.x); // 오름 차순 정렬
+        }
+    };
+
+    public static void main(String[] args) {
+        testCase(in.nextInt(), in.nextInt());
+    }
+
+    private static class Point {
+        int x;
+        int y;
+
+        @Override
+        public String toString() {
+            return "(" + x + "," + y + ")";
+        }
+
+        @Override
+        public int hashCode() {
+            return toString().hashCode();
+        }
+    }
+
+    private static void testCase(int n, int k) {
+        p.clear();
+        m.clear();
+
+        char[] directions = in.next().toCharArray(); // 길이는 k
+
+        Point cur = new Point();
+        // n 개의 식물 좌표
+        for (int i = 0; i < n; i++) { // O(n)
+            Point t = new Point();
+            t.x = in.nextInt(); t.y = in.nextInt();
+
+            if (i == 0) { // 처음 주어지는 식물이 개구리의 현 위치
+                cur = t;
+            }
+
+            Integer inP = includeP(t);
+            Integer inM = includeM(t);
+            if (inP != null) {
+                p.get(inP).add(t);
+            }
+            else {  // 포함된 p 배열이 없다면, p배열을 하나 추가하자.
+                ArrayList<Point> newP = new ArrayList<>();
+                newP.add(t);
+                p.put(t.x - t.y, newP);
+            }
+            if (inM != null) {
+                m.get(inM).add(t);
+            }
+            else { // 포함된 m 배열이 없다면, m배열을 하나 추가하자.
+                ArrayList<Point> newM = new ArrayList<>();
+                newM.add(t);
+                m.put(t.x + t.y, newM);
+            }
+        }
+
+        for (ArrayList<Point> pm : p.values()) { // O(n * logn)
+            pm.sort(comparator);
+//            for (Point t: pm) {
+//                System.out.print(t + " ");
+//            }
+//            System.out.println();
+        }
+
+//        System.out.println();
+        for (ArrayList<Point> pm : m.values()) { // O(n * logn)
+            pm.sort(comparator);
+//            for (Point t: pm) {
+//                System.out.print(t + " ");
+//            }
+//            System.out.println();
+        }
+
+        // k번 점프하며 현재 개구리 위치를 갱신한다.
+        for (int i=0;i<k;i++) { // O(k logn)
+//            System.out.print(cur + " ");
+            cur = jump(directions[i], cur);
+        }
+
+        // 마지막 위치를 출력한다.
+        System.out.println(cur.x + " " + cur.y);
+    }
+
+    private static Integer includeP(Point t) { // O(1)
+        ArrayList<Point> pm = p.get(t.x - t.y);
+        if (pm != null) {
+            return t.x - t.y;
+        }
+        else {
+            return null;
+        }
+    }
+
+    private static Integer includeM(Point t) { // O(1)
+        ArrayList<Point> pm = m.get(t.y + t.x);
+        if (pm != null) {
+            return t.y + t.x;
+        }
+        else {
+            return null;
+        }
+    }
+
+    private static Point jump(char dir, Point cur) {
+        ArrayList<Point> myp = p.get(cur.x - cur.y);
+        ArrayList<Point> mym = m.get(cur.y + cur.x);
+        int pos;
+        switch (dir) {
+            case 'A':
+                pos = Collections.binarySearch(myp, cur, comparator); // -1이 나올리가 없다.
+                if (pos == myp.size()-1) { // 점프할 곳이 없다면
+                    return cur;
+                }
+                else {
+                    Point ret = myp.get(pos+1);
+                    mym.remove(cur); myp.remove(cur);
+                    return ret; // 다음 위치로 점프
+                }
+            case 'D':
+                pos = Collections.binarySearch(myp, cur, comparator); // -1이 나올리가 없다.
+                if (pos == 0) { // 점프할 곳이 없다면
+                    return cur;
+                }
+                else {
+                    Point ret = myp.get(pos-1);
+                    mym.remove(cur); myp.remove(cur);
+                    return ret; // 다음 위치로 점프
+                }
+            case 'B':
+                pos = Collections.binarySearch(mym, cur, comparator); // -1이 나올리가 없다.
+                if (pos == mym.size()-1) { // 점프할 곳이 없다면
+                    return cur;
+                }
+                else {
+                    Point ret = mym.get(pos+1);
+                    mym.remove(cur); myp.remove(cur);
+                    return ret; // 다음 위치로 점프
+                }
+            case 'C':
+                pos = Collections.binarySearch(mym, cur, comparator); // -1이 나올리가 없다.
+                if (pos == 0) { // 점프할 곳이 없다면
+                    return cur;
+                }
+                else {
+                    Point ret = mym.get(pos-1);
+                    mym.remove(cur); myp.remove(cur);
+                    return ret; // 다음 위치로 점프
+                }
+        }
+        return null; // 이러면 에러다.
+    }
+}
